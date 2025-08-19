@@ -6,14 +6,16 @@ from dotenv import load_dotenv
 from db.schema import init_db, migrate_db
 from routes.boxes import bp as boxes_bp
 from routes.search import bp as search_bp
+from storage_s3 import assert_identity
 
 from routes.main import main_bp
 
 def create_app():
     load_dotenv()
     app = Flask(__name__)
+    assert_identity()
     app.secret_key = os.getenv("FLASK_SECRET", "dev-secret")
-    app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 102
+    app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB
 
     base_dir = Path(__file__).resolve().parent
     (base_dir / "uploads").mkdir(exist_ok=True)
