@@ -7,6 +7,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import List, Tuple, MutableMapping, Any
 from uuid import uuid4
+from storage_s3 import presigned_url
 
 from flask import (
     Blueprint,
@@ -46,6 +47,15 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)  # safe if already exists
 
 # ---------- helpers ----------
 
+def display_url(photo_value: str | None):
+    if not photo_value:
+        return None
+    # If DB still has a full URL from older rows, use it as-is.
+    if isinstance(photo_value, str) and photo_value.startswith("http"):
+        return photo_value
+    # Otherwise it's an S3 key -> presign
+    return presigned_url(photo_value, expires=60 * 60 * 24)
+
 def _ensure_photo_url_on_box(box_row: MutableMapping[str, Any]) -> None:
     """
     Given a dict-like row with 'photo' holding the S3 key, add a transient
@@ -59,10 +69,9 @@ def _ensure_photo_url_on_box(box_row: MutableMapping[str, Any]) -> None:
 
 @bp.route("/")
 def index():
-    boxes = [dict(b) for b in list_boxes()]  # make them mutable
+    boxes = [dict(b) for b in list_boxes()]
     for b in boxes:
-        key = b.get("photo")
-        b["photo_url"] = presigned_url(key) if key else None
+        b["photo_url"] = display_url(b.get("photo"))
     return render_template("index.html", boxes=boxes)
 
 @bp.route("/new", methods=["GET", "POST"])
