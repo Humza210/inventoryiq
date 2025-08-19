@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}InventoryIQ · Boxes{% endblock %}
+
+{% block content %}
+<style>
+  :root{ --chip-nudge: 6px; } /* tweak 4–7px if your OS/weights differ */
+
+  /* ===== Header: precise baseline alignment ===== */
+  .ix-head{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:16px; margin:2px 0 14px;
+  }
+  .ix-head-left{
+  display:flex;
+  align-items: baseline;  /* align to the text baseline */
+  gap:12px;
+}
+  .ix-title{ margin:0; font-size:44px; line-height:1.05; letter-spacing:.4px; }
+  .ix-chip{
+  --chip-nudge-em: -0.14em;   /* tweak between -0.10em and -0.18em if needed */
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:.38em .75em;        /* keeps optical height nice */
+  line-height:1;
+  border:1px solid var(--hairline);
+  border-radius:999px;
+  background:#fff;
+  color:var(--muted);
+  font-weight:700;
+  font-size:13px;
+  position:relative;
+  top: var(--chip-nudge-em);  /* ↑ baseline alignment */
+}
+
+  /* ===== Toolbar (unchanged aside from sizing sanity) ===== */
+  .ix-bar{
+    display:flex; align-items:center; flex-wrap:wrap; gap:12px;
+    margin:8px 0 18px; background:#fff; border:1px solid var(--hairline);
+    border-radius:14px; padding:10px 12px;
+  }
+  .ix-pills{display:flex; gap:8px; flex-wrap:wrap}
+  .ix-pill{padding:6px 10px; border:1px solid var(--hairline); border-radius:999px; background:#fff; font-weight:700; font-size:13px; cursor:pointer}
+  .ix-pill[aria-pressed="true"]{border-color:#000}
+  .ix-spacer{flex:1 1 8px}
+  #sortBy{min-width:170px; max-width:220px; padding:8px 36px 8px 12px; border-radius:10px; border:1px solid var(--hairline); background:#fff; appearance:none;
+    background-image: linear-gradient(45deg, transparent 50%, #666 50%), linear-gradient(135deg, #666 50%, transparent 50%), linear-gradient(to right, transparent, transparent);
+    background-position: calc(100% - 14px) 50%, calc(100% - 8px) 50%, 0 0; background-size: 6px 6px, 6px 6px, 100% 100%; background-repeat:no-repeat;
+  }
+  .ix-search{position:relative; flex:1 1 260px}
+  .ix-search input{width:100%; padding:10px 12px 10px 38px; border:1px solid var(--hairline); border-radius:12px; background:#fff}
+  .ix-search svg{position:absolute; left:10px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:#7a7f84}
+
+  /* ===== Grid & Cards ===== */
+  .ix-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:22px}
+  .ix-col{grid-column:span 4}
+  @media (max-width:1100px){ .ix-col{grid-column:span 6} }
+  @media (max-width:680px){ .ix-col{grid-column:span 12} }
+
+  .ix-card{
+    height:100%;
+    display:flex; flex-direction:column;
+    background:#fff; border:1px solid var(--hairline); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden;
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+  .ix-card:hover{transform:translateY(-3px); box-shadow:0 14px 28px rgba(0,0,0,.08); border-color:#e2e2e4}
+
+  /* >>> FIX: remove default figure margins so images align flush */
+  .ix-media{ margin:0; width:100%; aspect-ratio:4/3; background:#F1F1F2; overflow:hidden; }
+  .ix-media img{ width:100%; height:100%; object-fit:cover; object-position:center 45%; display:block; }
+
+  .ix-body{padding:16px 18px 18px; min-height:120px; display:flex; flex-direction:column; gap:8px}
+  .ix-name{margin:0; font-weight:800; letter-spacing:.3px; font-size:22px; line-height:1.2}
+  .ix-meta{margin:0; color:var(--muted); font-size:13px}
+
+  .ix-empty{display:none; margin-top:18px; background:#fff; border:1px solid var(--hairline);
+            border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; text-align:center; color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <div class="ix-head">
+    <div class="ix-head-left">
+      <h1 class="ix-title">Boxes</h1>
+      <span class="ix-chip" id="shownChip">{{ boxes|length if boxes else 0 }} shown</span>
+    </div>
+  </div>
+
+  <div class="ix-bar" role="region" aria-label="Filters and search">
+    <div class="ix-pills" id="pillFilters">
+      <button class="ix-pill" type="button" data-filter="all" aria-pressed="true">All</button>
+      <button class="ix-pill" type="button" data-filter="today">Created Today</button>
+      <button class="ix-pill" type="button" data-filter="has:photo">With Photos</button>
+    </div>
+
+    <div class="ix-spacer"></div>
+
+    <label class="visually-hidden" for="sortBy">Sort by</label>
+    <select id="sortBy" aria-label="Sort by">
+      <option value="date_desc">Newest first</option>
+      <option value="date_asc">Oldest first</option>
+      <option value="name_asc">Name A→Z</option>
+      <option value="name_desc">Name Z→A</option>
+    </select>
+
+    <div class="ix-search" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 7.5-7.5A7.5 7.5 0 0 1 10.5 18Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <label class="visually-hidden" for="q">Search boxes</label>
+      <input id="q" type="search" placeholder="Search by name or date…" autocomplete="off" />
+    </div>
+  </div>
+
+  {% if boxes and boxes|length %}
+    <section id="grid" class="ix-grid" aria-label="Boxes">
+      {% for box in boxes %}
+        {% set name = (box['name'] or '') %}
+        {% set created = (box['created_at'] or '') %}
+        {% set created_iso = created[:10] %}
+        <a
+          class="ix-card ix-col"
+          href="{{ url_for('boxes.box_detail', box_id=box['id']) }}"
+          data-name="{{ name|lower }}"
+          data-date="{{ created_iso }}"
+          data-has-photo="{{ '1' if box['photo'] else '0' }}"
+          data-created="{{ created_iso }}"
+          aria-label="Open {{ name or 'box' }}"
+        >
+          <figure class="ix-media">
+            {% if box['photo'] %}
+              <img src="{{ url_for('boxes.uploaded_file', filename=box['photo']) }}" alt="{{ name or 'Box photo' }}" loading="lazy" decoding="async" />
+            {% else %}
+              <img src="{{ url_for('static', filename='placeholders/box.png') }}" alt="{{ name or 'Box' }}" loading="lazy" decoding="async" />
+            {% endif %}
+          </figure>
+          <div class="ix-body">
+            <h3 class="ix-name">{{ name or 'Untitled Box' }}</h3>
+            <p class="ix-meta">Created <time datetime="{{ created_iso }}">{{ created_iso }}</time></p>
+          </div>
+        </a>
+      {% endfor %}
+    </section>
+
+    <div id="empty" class="ix-empty">No boxes match your filters.</div>
+  {% else %}
+    <div class="panel" style="padding:40px;text-align:center">
+      <h2 style="margin:0 0 10px;">No boxes yet</h2>
+      <p class="sub">Start organizing your garage by creating your first box.</p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  (function(){
+    const $  = (q, ctx=document)=>ctx.querySelector(q);
+    const $$ = (q, ctx=document)=>Array.from(ctx.querySelectorAll(q));
+
+    const grid   = $('#grid');
+    const cards  = grid ? $$('.ix-card', grid) : [];
+    const search = $('#q');
+    const chip   = $('#shownChip');
+    const empty  = $('#empty');
+    const pills  = $$('#pillFilters .ix-pill');
+    const sortBy = $('#sortBy');
+    const todayISO = new Date().toISOString().slice(0,10);
+
+    function applyVisibility(){
+      const term = (search?.value || '').trim().toLowerCase();
+      const filter = pills.find(p=>p.getAttribute('aria-pressed')==='true')?.dataset.filter || 'all';
+      let shown = 0;
+
+      cards.forEach(card=>{
+        const name = card.dataset.name || '';
+        const date = card.dataset.date || '';
+        const hasPhoto = card.dataset.hasPhoto === '1';
+        let match = !term || name.includes(term) || date.includes(term);
+        if (match) {
+          if (filter==='today') match = date === todayISO;
+          else if (filter==='has:photo') match = hasPhoto;
+        }
+        card.style.display = match ? '' : 'none';
+        if (match) shown++;
+      });
+
+      if (chip)  chip.textContent = `${shown} shown`;
+      if (empty) empty.style.display = shown ? 'none' : 'block';
+    }
+
+    function applySort(){
+      if(!grid) return;
+      const mode = sortBy?.value || 'date_desc';
+      const items = [...cards];
+      items.sort((a,b)=>{
+        const an=a.dataset.name, bn=b.dataset.name;
+        const ad=a.dataset.created, bd=b.dataset.created;
+        switch(mode){
+          case 'name_asc':  return an.localeCompare(bn);
+          case 'name_desc': return bn.localeCompare(an);
+          case 'date_asc':  return ad.localeCompare(bd);
+          case 'date_desc':
+          default:          return bd.localeCompare(ad);
+        }
+      });
+      items.forEach(el=>grid.appendChild(el));
+    }
+
+    search?.addEventListener('input', applyVisibility);
+    sortBy?.addEventListener('change', ()=>{ applySort(); applyVisibility(); });
+    $$('#pillFilters .ix-pill').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        $$('#pillFilters .ix-pill').forEach(p=>p.setAttribute('aria-pressed','false'));
+        btn.setAttribute('aria-pressed','true');
+        applyVisibility();
+      });
+    });
+
+    // keyboard: "/" or Cmd/Ctrl+K → focus search
+    window.addEventListener('keydown', (e)=>{
+      const tag=(document.activeElement||{}).tagName;
+      if (tag==='INPUT' || tag==='TEXTAREA') return;
+      if (e.key==='/' || (e.key.toLowerCase()==='k' && (e.metaKey||e.ctrlKey))) {
+        e.preventDefault(); search?.focus(); search?.select();
+      }
+    });
+
+    applySort();
+    applyVisibility();
+  })();
+</script>
+{% endblock %}

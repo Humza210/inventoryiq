@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+{% block title %}Box #{{ box.id }} — {{ box.name }}{% endblock %}
+
+{% block content %}
+<style>
+  /* ========= Professional minimal styling (scoped) ========= */
+  .bd-wrap{max-width:var(--container);margin:0 auto;padding:22px}
+  .bd-row{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
+  .bd-main{grid-column:span 8}
+  .bd-side{grid-column:span 4}
+  @media (max-width:980px){.bd-main,.bd-side{grid-column:span 12}}
+
+  /* Header */
+  .bd-head {
+  display: flex;
+  align-items: center;  /* keeps arrow + text perfectly aligned */
+  gap: 12px;
+  margin: 0 0 14px;
+}
+
+.bd-back {
+  display: grid;
+  place-items: center;    /* centers the arrow inside */
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;    /* rounded button */
+  border: 1px solid var(--hairline);
+  background: #fff;
+  color: var(--ink);
+  flex-shrink: 0;         /* prevents squishing */
+  transition: 0.15s;
+}
+.bd-back:hover {
+  transform: translateX(-2px);
+  border-color: #dcdde0;
+  background: #fafafa;
+}
+
+.bd-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: .2px;
+}
+
+.bd-meta {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+  /* Cards (photo, items, side) */
+  .bd-card{
+    background:#fff;border:1px solid var(--hairline);border-radius:16px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .bd-card .bd-headline{padding:12px 14px;border-bottom:1px solid var(--hairline);font-weight:700;letter-spacing:.3px}
+
+  /* Photo block */
+  .bd-photo .media{margin:0;aspect-ratio:16/9;background:#f3f4f6}
+  .bd-photo img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+  .bd-photo .actions{
+    display:flex;align-items:center;gap:10px;justify-content:space-between;
+    padding:12px 14px;border-top:1px solid var(--hairline)
+  }
+  .bd-drop{
+    position:relative;display:flex;align-items:center;gap:10px;
+    padding:8px 10px;border:1px dashed var(--hairline);border-radius:10px;background:#fff
+  }
+  .bd-drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+  /* Toolbar above items */
+  .bd-toolbar{
+    display:flex;align-items:center;gap:10px;margin:12px 0 14px;
+    background:#fff;border:1px solid var(--hairline);border-radius:12px;padding:10px 12px
+  }
+  .bd-select-on{display:none;gap:10px}
+  .bd-select-on.show{display:flex}
+  .bd-flex{flex:1}
+  .bd-search{position:relative;flex:1}
+  .bd-search input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--hairline);border-radius:10px;background:#fff}
+  .bd-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#7a7f84}
+  .bd-sort{min-width:170px;padding:8px 10px;border:1px solid var(--hairline);border-radius:10px;background:#fff}
+
+  /* Items */
+  .bd-items{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .bd-item{grid-column:span 6}
+  @media (max-width:700px){.bd-item{grid-column:span 12}}
+
+  .item-card{overflow:hidden}
+  .item-card .media{margin:0;aspect-ratio:4/3;background:#f3f4f6}
+  .item-card img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+  .item-pad{padding:14px 16px 16px}
+  .item-title{margin:0 0 6px;font-weight:800;letter-spacing:.2px;font-size:18px}
+  .item-meta{color:var(--muted);font-size:12px}
+  .item-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+
+  .chip{display:inline-block;padding:3px 8px;border:1px solid var(--hairline);border-radius:999px;font-size:12px;color:var(--muted)}
+
+  /* Inline edit states */
+  .item-card.is-edit .read{display:none}
+  .item-card.is-edit .edit{display:block}
+  .edit{display:none}
+
+  /* Insights (sticky) */
+  .bd-sticky{position:sticky;top:76px}
+  .ins-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;padding:14px}
+  .ins{grid-column:span 6;border:1px dashed var(--hairline);border-radius:10px;padding:10px 12px;background:#fff}
+  @media (max-width:700px){.ins{grid-column:span 12}}
+  .ins .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .ins .v{font-weight:800;margin-top:4px}
+  .ins-tags{padding:0 14px 14px}
+  .tag{display:inline-block;margin:6px 6px 0 0;padding:4px 8px;border:1px solid var(--hairline);border-radius:999px;background:#fff;font-size:12px}
+
+  /* Buttons (use your theme tokens) */
+  .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--hairline);background:#fff;font-weight:600;cursor:pointer}
+  .btn-ghost{background:#fff}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-700)}
+  .btn-danger{color:var(--danger);border-color:var(--danger)}
+  .btn-danger:hover{background:var(--danger);color:#fff}
+  .btn-sm{padding:8px 10px;border-radius:8px}
+
+  /* Lightbox */
+  .lx{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:1200}
+  .lx.is-open{display:flex}
+  .lx img{max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+</style>
+
+<div class="bd-wrap">
+  <!-- Header -->
+  <div class="bd-head">
+  <a class="back-btn" href="{{ request.referrer or url_for('boxes.index') }}" aria-label="Back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  </a>
+  <div>
+    <h1 class="bd-title">{{ box.name }}</h1>
+    <p class="bd-meta">Box #{{ box.id }} • Created {{ box.created_at }}</p>
+  </div>
+</div>
+
+  <div class="bd-row">
+    <!-- Main -->
+    <section class="bd-main">
+      <form id="boxForm" method="post" enctype="multipart/form-data" action="{{ url_for('boxes.box_detail', box_id=box.id) }}">
+        <input type="hidden" id="boxNameInput" name="name" value="{{ box.name }}">
+
+        <!-- Photo -->
+        <div class="bd-card bd-photo">
+          <figure class="media">
+            {% if photo_url %}
+              <img src="{{ photo_url }}" alt="Box photo" loading="lazy" decoding="async" data-zoom>
+            {% else %}
+              <img src="https://source.unsplash.com/1600x900/?box,storage" alt="Box photo" loading="lazy" decoding="async" data-zoom>
+            {% endif %}
+          </figure>
+          <div class="actions">
+            <label class="bd-drop">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 13v6H5v-6H3v8h18v-8h-2ZM13 5.83V18h-2V5.83L7.41 9.41 6 8l6-6 6 6-1.41 1.41L13 5.83Z"/></svg>
+              <strong>Replace photo</strong><small class="sub">Click or drop image</small>
+              <input type="file" name="new_photo" accept="image/*" id="photoInput">
+            </label>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-sm" type="submit" title="Save (⌘/Ctrl+S)">Save</button>
+              <button class="btn btn-danger btn-sm" form="deleteBoxForm" type="submit">Delete box</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items toolbar -->
+        <div class="bd-toolbar">
+          <button id="toggleSelect" class="btn btn-sm" type="button">Select</button>
+          <div id="bulkActions" class="bd-select-on">
+            <button id="bulkDelete" class="btn btn-danger btn-sm" type="button" disabled>Delete selected</button>
+          </div>
+          <div class="bd-flex"></div>
+          <select id="sortItems" class="bd-sort">
+            <option value="added_desc">Newest first</option>
+            <option value="added_asc">Oldest first</option>
+            <option value="name_asc">Name A→Z</option>
+            <option value="name_desc">Name Z→A</option>
+          </select>
+          <div class="bd-search">
+            <svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M10.5 18A7.5 7.5 0 1 1 18 10.5 7.5 7.5 0 0 1 10.5 18Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <label class="visually-hidden" for="itSearch">Search items</label>
+            <input id="itSearch" type="search" placeholder="Search items… ( / )" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Items -->
+        <div id="itemsGrid" class="bd-items" aria-live="polite">
+          {% for it in items %}
+          <div class="bd-item">
+            <div class="bd-card item-card" data-item data-name="{{ (it.name or '')|lower }}" data-added="{{ it.added_at or '' }}">
+              <figure class="media">
+                {% if it.image_url %}
+                  <img src="{{ it.image_url }}" alt="{{ it.name }}" loading="lazy" decoding="async" data-zoom>
+                {% else %}
+                  <img src="https://source.unsplash.com/1200x900/?warehouse,goods" alt="{{ it.name }}" loading="lazy" decoding="async" data-zoom>
+                {% endif %}
+              </figure>
+              <div class="item-pad">
+                <!-- read -->
+                <div class="read">
+                  <div class="row-between" style="margin-bottom:6px">
+                    <h3 class="item-title">{{ it.name }}</h3>
+                    <span class="chip">Conf {{ '%.2f'|format(it.confidence or 0) }}</span>
+                  </div>
+                  <div class="item-meta">
+                    {% if it.price_cents is not none %}
+                      Approx. price: ${{ '%.2f'|format((it.price_cents or 0)/100) }}
+                    {% else %}Price: n/a{% endif %}
+                    {% if it.added_at %} • Added {{ it.added_at }}{% endif %}
+                  </div>
+                  <div class="item-foot">
+                    <button class="btn btn-sm" type="button" data-edit>Edit</button>
+                    <button class="btn btn-danger btn-sm" type="button" data-delete>Delete</button>
+                    <input type="checkbox" class="sel" hidden>
+                  </div>
+                </div>
+
+                <!-- edit -->
+                <div class="edit">
+                  <div class="form-row">
+                    <div class="col">
+                      <label class="label">Item name</label>
+                      <input type="text" name="items[{{ loop.index0 }}].name" value="{{ it.name }}">
+                    </div>
+                    <div class="col">
+                      <label class="label">Confidence</label>
+                      <input type="number" step="0.01" min="0" max="1" name="items[{{ loop.index0 }}].confidence" value="{{ '%.2f'|format(it.confidence or 0) }}">
+                    </div>
+                    <div class="col">
+                      <label class="label">Price (USD)</label>
+                      <input type="number" step="0.01" min="0" name="items[{{ loop.index0 }}].price_dollars"
+                             value="{{ '%.2f'|format(((it.price_cents or 0)/100) if it.price_cents is not none else 0) }}">
+                    </div>
+                  </div>
+                  <div class="item-foot">
+                    <button class="btn btn-sm" type="button" data-cancel>Done</button>
+                    <button class="btn btn-danger btn-sm" type="button" data-delete>Delete</button>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" name="order[]" value="{{ loop.index0 }}">
+            </div>
+          </div>
+          {% else %}
+          <div class="bd-item" style="grid-column:span 12">
+            <div class="bd-card"><div class="bd-headline">No items in this box yet</div></div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Footer actions -->
+        <div class="row" style="justify-content:flex-end;gap:10px;margin-top:16px">
+          <a class="btn btn-ghost" href="{{ url_for('boxes.index') }}">Close</a>
+          <button class="btn btn-primary" type="submit" title="Save (⌘/Ctrl+S)">Save all</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Side / Insights -->
+    <aside class="bd-side">
+      <div class="bd-card bd-sticky">
+        <div class="bd-headline">Insights</div>
+        <div class="ins-grid">
+          {% set item_count = items|length %}
+          {% set priced_list = items|selectattr('price_cents','ne',None)|list %}
+          {% set priced_count = priced_list|length %}
+          {% set total_cents = priced_list|map(attribute='price_cents')|sum %}
+          {% set latest = items|last if item_count > 0 else None %}
+          <div class="ins"><div class="k">Items</div><div class="v">{{ item_count }}</div></div>
+          <div class="ins"><div class="k">Priced items</div><div class="v">{{ priced_count }}</div></div>
+          <div class="ins"><div class="k">Estimated value</div><div class="v">{% if total_cents %}${{ '%.2f'|format(total_cents/100) }}{% else %}—{% endif %}</div></div>
+          <div class="ins"><div class="k">Most recent</div>
+            <div class="v">{% if latest %}{{ latest.name }}{% if latest.added_at %} • {{ latest.added_at }}{% endif %}{% else %}—{% endif %}</div>
+          </div>
+        </div>
+        {% if item_count %}
+        <div class="ins-tags">
+          <div class="k" style="margin-bottom:6px;color:var(--muted);font-size:12px">What’s inside</div>
+          {% for it in items[:7] %}<span class="tag">{{ it.name }}</span>{% endfor %}
+          {% if item_count > 7 %}<span class="tag">+{{ item_count - 7 }} more</span>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+
+  <form id="deleteBoxForm" method="post" action="{{ url_for('boxes.delete_box', box_id=box.id) }}"></form>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lx" role="dialog" aria-modal="true"><img alt=""></div>
+
+<script>
+(function(){
+  const $  = (q, ctx=document)=>ctx.querySelector(q);
+  const $$ = (q, ctx=document)=>Array.from(ctx.querySelectorAll(q));
+
+  const form = $('#boxForm');
+  const nameEditable = $('#boxNameEditable');
+  const nameInput = $('#boxNameInput');
+
+  // Sync contenteditable with hidden input & quick-save
+  nameEditable?.addEventListener('input', ()=> nameInput.value = nameEditable.textContent.trim());
+  window.addEventListener('keydown', (e)=>{
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); form?.submit(); }
+    const tag=(document.activeElement||{}).tagName;
+    if (e.key==='/' && tag!=='INPUT' && tag!=='TEXTAREA'){ e.preventDefault(); $('#itSearch')?.focus(); }
+    if (e.key==='Escape'){ closeLightbox(); $$('.item-card.is-edit').forEach(c=>c.classList.remove('is-edit')); }
+  });
+
+  // Photo preview on drop/choose
+  const photoInput = $('#photoInput');
+  const photoImg   = document.querySelector('.bd-photo img');
+  photoInput?.addEventListener('change', ()=>{
+    const f = photoInput.files?.[0]; if (!f) return;
+    photoImg.src = URL.createObjectURL(f);
+  });
+
+  // Items: search + sort + select mode
+  const grid   = $('#itemsGrid');
+  const cards  = ()=> $$('.item-card', grid);
+  const search = $('#itSearch');
+  const sort   = $('#sortItems');
+  const selBtn = $('#toggleSelect');
+  const bulk   = $('#bulkActions');
+  const delSel = $('#bulkDelete');
+
+  function filter(){
+    const term = (search?.value || '').trim().toLowerCase();
+    cards().forEach(c=>{
+      const n=c.dataset.name||'', d=c.dataset.added||'';
+      c.style.display = (!term || n.includes(term) || d.includes(term)) ? '' : 'none';
+    });
+  }
+  function sortCards(){
+    const mode = sort?.value || 'added_desc';
+    const arr = cards();
+    arr.sort((a,b)=>{
+      const an=a.dataset.name, bn=b.dataset.name;
+      const aa=a.dataset.added, ba=b.dataset.added;
+      switch(mode){
+        case 'name_asc': return an.localeCompare(bn);
+        case 'name_desc':return bn.localeCompare(an);
+        case 'added_asc':return aa.localeCompare(ba);
+        case 'added_desc':
+        default: return ba.localeCompare(aa);
+      }
+    });
+    arr.forEach(el=> grid.appendChild(el));
+  }
+  search?.addEventListener('input', filter);
+  sort?.addEventListener('change', ()=>{ sortCards(); filter(); });
+
+  // Select mode
+  let selecting=false;
+  function setSelecting(on){
+    selecting=on; bulk.classList.toggle('show', on);
+    selBtn.textContent = on ? 'Cancel' : 'Select';
+    cards().forEach(c=>{ const s=c.querySelector('.sel'); s.hidden=!on; s.checked=false; });
+    delSel.disabled=true;
+  }
+  selBtn?.addEventListener('click', ()=> setSelecting(!selecting));
+  grid?.addEventListener('change', e=>{
+    if (!e.target.classList.contains('sel')) return;
+    delSel.disabled = !cards().some(c=>c.querySelector('.sel')?.checked);
+  });
+  delSel?.addEventListener('click', ()=>{
+    const chosen = cards().filter(c=>c.querySelector('.sel')?.checked);
+    if (!chosen.length) return;
+    if (!confirm(`Delete ${chosen.length} selected item(s)?`)) return;
+    chosen.forEach(c=>{ c.querySelectorAll('input[name^="items["]').forEach(i=>i.remove()); c.remove(); });
+    setSelecting(false);
+  });
+
+  // Inline edit
+  grid?.addEventListener('click', (e)=>{
+    const card = e.target.closest('.item-card'); if(!card) return;
+    if (e.target.matches('[data-edit]')) { card.classList.add('is-edit'); }
+    if (e.target.matches('[data-cancel]')){ card.classList.remove('is-edit'); }
+    if (e.target.matches('[data-delete]')){
+      if (!confirm('Remove this item?')) return;
+      card.querySelectorAll('input[name^="items["]').forEach(i=>i.remove());
+      card.remove();
+    }
+  });
+
+  // Lightbox
+  const lb = $('#lightbox'), lbImg = lb?.querySelector('img');
+  function openLightbox(src){ if(lb&&lbImg){ lbImg.src=src; lb.classList.add('is-open'); } }
+  function closeLightbox(){ lb?.classList.remove('is-open'); }
+  document.addEventListener('click', (e)=>{
+    const z=e.target.closest('[data-zoom]'); if(z) openLightbox(z.src);
+    if(e.target===lb) closeLightbox();
+  });
+
+  // Init
+  sortCards(); filter();
+})();
+</script>
+{% endblock %}

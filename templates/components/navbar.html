@@ -1,0 +1,64 @@
+<header class="ts-nav" role="banner">
+  <div class="ts-nav__inner">
+
+    <!-- Brand / Home -->
+    <a href="{{ url_for('boxes.index') }}" class="brand" aria-label="InventoryIQ home">
+      <img class="brand-logo" src="{{ url_for('static', filename='logo.svg') }}" alt="InventoryIQ">
+    </a>
+
+    <!-- Mobile toggle (shown on very small screens when center menu is hidden by CSS) -->
+    <button class="ts-icon" id="navToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="primaryNav">
+      <!-- simple hamburger -->
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+      </svg>
+    </button>
+
+    <!-- Primary navigation -->
+    <nav class="ts-menu__center" id="primaryNav" aria-label="Primary">
+      <a href="{{ url_for('boxes.index') }}"
+         class="ts-link {% if request.endpoint and request.endpoint.startswith('boxes.') %}is-active{% endif %}"
+         aria-current="{% if request.endpoint and request.endpoint.startswith('boxes.') %}page{% endif %}">
+        Boxes
+      </a>
+
+      <a href="{{ url_for('search.search') }}"
+         class="ts-link {% if request.endpoint and request.endpoint.startswith('search.') %}is-active{% endif %}"
+         aria-current="{% if request.endpoint and request.endpoint.startswith('search.') %}page{% endif %}">
+        Search
+      </a>
+
+      <a href="{{ url_for('boxes.new_box') }}"
+         class="ts-link {% if request.endpoint == 'boxes.new_box' %}is-active{% endif %}"
+         aria-current="{% if request.endpoint == 'boxes.new_box' %}page{% endif %}">
+        New Box
+      </a>
+    </nav>
+
+    <!-- Secondary (right) -->
+    <nav class="ts-menu__right" aria-label="Secondary">
+      <a href="{{ url_for('main.about') }}"
+         class="ts-link muted {% if request.endpoint == 'main.about' %}is-active{% endif %}"
+         aria-current="{% if request.endpoint == 'main.about' %}page{% endif %}">
+        About
+      </a>
+      <a href="#lang" class="ts-link muted">EN</a>
+      <a href="#profile" class="ts-link muted">Profile</a>
+    </nav>
+
+  </div>
+</header>
+
+<script>
+/* Minimal mobile toggle: only affects visibility when CSS collapses the center menu */
+(function(){
+  const btn = document.getElementById('navToggle');
+  const nav = document.getElementById('primaryNav');
+  if(!btn || !nav) return;
+  btn.addEventListener('click', () => {
+    const open = nav.style.display === 'flex';
+    nav.style.display = open ? '' : 'flex';
+    btn.setAttribute('aria-expanded', String(!open));
+  });
+})();
+</script>

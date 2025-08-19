@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="920" height="160" viewBox="0 0 920 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="InventoryIQ logo">
+  <title>InventoryIQ</title>
+  <desc>Left: red tile with I (three boxes) and a clear capital Q. Right: wordmark with INVENTORY in black and IQ in red.</desc>
+
+  <!-- === LEFT ICON (your exact favicon geometry) === -->
+  <g transform="translate(16,16)">
+    <!-- Red tile -->
+    <rect x="0" y="0" width="128" height="128" rx="22" fill="#E82127"/>
+
+    <!-- I (three stacked boxes, centered vertically) -->
+    <rect x="28" y="38" width="12" height="12" fill="#FFFFFF"/>
+    <rect x="28" y="58" width="12" height="12" fill="#FFFFFF"/>
+    <rect x="28" y="78" width="12" height="12" fill="#FFFFFF"/>
+
+    <!-- Q (capital, proper letterform) -->
+    <circle cx="84" cy="64" r="28" fill="#FFFFFF"/>
+    <circle cx="84" cy="64" r="18" fill="#E82127"/>
+
+    <!-- Tail of Q (diagonal line) -->
+    <line x1="96" y1="76" x2="110" y2="92" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- === WORDMARK === -->
+  <!-- Baseline aligned visually to icon center; INVENTORY black, IQ red -->
+  <text x="156" y="112"
+        font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="92" font-weight="800" letter-spacing="2" fill="#171A1C">
+    INVENTORY<tspan fill="#E82127" font-weight="900">IQ</tspan>
+  </text>
+</svg>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{% block title %}InventoryIQ{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Favicon & Styles -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='inventoryiq.css') }}">
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  {# Reusable Tesla-like navbar #}
+  {% include "components/navbar.html" %}
+
+  {# First-load splash (hidden after first visit) #}
+  <div id="splash" class="splash" aria-hidden="true">
+    <div class="splash-card" role="status" aria-live="polite">
+      <img class="splash-logo" src="{{ url_for('static', filename='logo.svg') }}" alt="">
+      <h2 class="splash-title">INVENTORYIQ</h2>
+      <div class="spinner" aria-label="Loading…"></div>
+    </div>
+  </div>
+
+  {# Command Palette (Cmd/Ctrl+K) #}
+  <div id="cmdk" class="cmdk" aria-hidden="true">
+    <div class="cmdk__panel" role="dialog" aria-modal="true" aria-label="Command Palette">
+      <div class="cmdk__header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M10 19l-7-7 7-7"/><path d="M4 12h16"/>
+        </svg>
+        <input id="cmdk-input" type="text" placeholder="Type a command… (e.g., new box, search)" autocomplete="off" />
+        <kbd>esc</kbd>
+      </div>
+      <ul class="cmdk__list" id="cmdk-list">
+        <li tabindex="0" data-url="{{ url_for('boxes.new_box') }}"><strong>New Box</strong><span>Create a new storage box</span></li>
+        <li tabindex="0" data-url="{{ url_for('search.search') }}"><strong>Search</strong><span>Find items across all boxes</span></li>
+        <li tabindex="0" data-url="{{ url_for('boxes.index') }}"><strong>Go Home</strong><span>Return to your boxes</span></li>
+        <li tabindex="0" data-url="{{ url_for('main.about') }}"><strong>About</strong><span>Learn how InventoryIQ works</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <main class="wrap">
+    {# Toasts / flash messages #}
+    {% with msgs = get_flashed_messages() %}
+      {% if msgs %}
+        <div class="toast">
+          {% for m in msgs %}
+            {{ m }}{% if not loop.last %}<br>{% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block scripts %}{% endblock %}
+
+  <script>
+    /* ---------- Splash: once per browser, with robust fallbacks ---------- */
+    (function () {
+      const KEY = "inventoryiq_splash_seen";
+      const el = document.getElementById("splash");
+      if (!el) return;
+
+      const seen = localStorage.getItem(KEY) === "1";
+      if (seen) { el.remove(); return; }
+
+      let hidden = false;
+      const hide = () => {
+        if (hidden) return;
+        hidden = true;
+        try { localStorage.setItem(KEY, "1"); } catch(_) {}
+        el.classList.add("hide");
+        setTimeout(() => el.remove(), 500);
+      };
+
+      window.addEventListener("load", () => setTimeout(hide, 650), { once:true });
+      document.addEventListener("DOMContentLoaded", () => setTimeout(hide, 1200), { once:true });
+      setTimeout(hide, 4000); // final failsafe
+    })();
+
+    /* ---------- Command Palette (Cmd/Ctrl+K) ---------- */
+    (function () {
+      const root = document.getElementById('cmdk');
+      const input = document.getElementById('cmdk-input');
+      const list = document.getElementById('cmdk-list');
+      if (!root || !input || !list) return;
+
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      let idx = -1;
+
+      function openPalette(){
+        root.classList.add('is-open');
+        root.setAttribute('aria-hidden', 'false');
+        input.value = '';
+        idx = -1;
+        list.querySelectorAll('li').forEach(li => li.style.display = '');
+        input.focus();
+      }
+      function closePalette(){
+        root.classList.remove('is-open');
+        root.setAttribute('aria-hidden', 'true');
+      }
+
+      document.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        if ((isMac && e.metaKey && key === 'k') || (!isMac && e.ctrlKey && key === 'k')) {
+          e.preventDefault(); openPalette(); return;
+        }
+        if (key === 'escape' && root.classList.contains('is-open')) {
+          e.preventDefault(); closePalette(); return;
+        }
+        // Quick search “/”
+        if (key === '/' && !root.classList.contains('is-open')) {
+          const quick = document.querySelector('.search-lite input');
+          if (quick) { e.preventDefault(); quick.focus(); quick.select(); }
+        }
+      });
+
+      root.addEventListener('click', (e) => { if (e.target === root) closePalette(); });
+
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        list.querySelectorAll('li').forEach(li => {
+          li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+        idx = -1;
+      });
+
+      list.addEventListener('click', (e) => {
+        const li = e.target.closest('li'); if (!li) return;
+        window.location = li.dataset.url;
+      });
+
+      input.addEventListener('keydown', (e) => {
+        const items = Array.from(list.querySelectorAll('li')).filter(li => li.style.display !== 'none');
+        if (!items.length) return;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault(); idx = (idx + 1) % items.length; items[idx].focus(); items[idx].scrollIntoView({block:'nearest'}); return;
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault(); idx = (idx - 1 + items.length) % items.length; items[idx].focus(); items[idx].scrollIntoView({block:'nearest'}); return;
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const target = items[Math.max(idx,0)] || items[0];
+          if (target) window.location = target.dataset.url;
+        }
+      });
+    })();
+  </script>
+  {% include "components/footer.html" %}
+</body>
+</html>

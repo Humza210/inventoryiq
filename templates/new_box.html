@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}New Box — InventoryIQ{% endblock %}
+
+{% block content %}
+<style>
+  .nb-wrap{max-width:900px;margin:0 auto}
+  .nb-head{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+  .nb-title{margin:0;font-size:36px;line-height:1.15;letter-spacing:.2px}
+  .nb-sub{margin:6px 0 0;color:var(--muted);font-size:14px}
+
+  .nb-panel{background:#fff;border:1px solid var(--hairline);border-radius:14px;box-shadow:var(--shadow)}
+  .nb-body{padding:16px}
+
+  .nb-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .nb-col{grid-column:span 6}
+  @media (max-width:800px){.nb-col{grid-column:span 12}}
+
+  .nb-drop{
+    border:2px dashed #dfe1e4;border-radius:14px;background:#fafafa;
+    padding:20px;text-align:center;cursor:pointer;transition:.15s;
+    outline:none;
+  }
+  .nb-drop.drag{background:#f2f7ff;border-color:#9cc1ff}
+  .nb-icon{width:42px;height:42px;margin:8px auto 12px;opacity:.75;display:block}
+  .nb-help{color:var(--muted);font-size:13px}
+  .nb-err{margin-top:10px;color:#b42318;font-weight:600;display:none}
+
+  .nb-preview{
+    border:1px solid var(--hairline);border-radius:12px;overflow:hidden;background:#f3f4f6;
+    aspect-ratio: 4/3;
+  }
+  .nb-preview img{width:100%;height:100%;object-fit:cover;display:block}
+
+  .nb-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+  .nb-btn{padding:10px 14px;border:1px solid var(--hairline);border-radius:10px;background:#fff;font-weight:700}
+  .nb-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .nb-btn.primary:disabled{opacity:.6;cursor:not-allowed}
+</style>
+
+<div class="nb-wrap">
+  <!-- Header -->
+  <div class="nb-head">
+    <a href="{{ url_for('boxes.index') }}" class="back-btn" aria-label="Back"
+       onclick="if (history.length>1 && document.referrer && new URL(document.referrer).origin===location.origin){history.back();return false;}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <div>
+      <h1 class="nb-title">Create a New Box</h1>
+      <p class="nb-sub">Upload one photo. We’ll scan it, suggest a box title, and list items with images & local prices.</p>
+    </div>
+  </div>
+
+  <!-- Flashes -->
+  {% with msgs = get_flashed_messages() %}
+    {% if msgs %}
+      <div class="toast">{% for m in msgs %}<div>{{ m }}</div>{% endfor %}</div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Panel -->
+  <div class="nb-panel">
+    <div class="nb-body">
+      <form id="nbForm" method="post" enctype="multipart/form-data" action="{{ url_for('boxes.new_box') }}">
+        <div class="nb-grid">
+          <!-- Dropzone / picker -->
+          <div class="nb-col">
+            <!-- Use a DIV (not label) to avoid double-open; open via JS only -->
+            <div class="nb-drop" id="drop" role="button" tabindex="0" aria-label="Upload image">
+              <svg class="nb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M20 16.5a4.5 4.5 0 01-4.5 4.5h-7A4.5 4.5 0 014 16.5 4.5 4.5 0 018.5 12H9"/>
+              </svg>
+              <div style="font-weight:800">Drop image here or click to upload</div>
+              <div class="nb-help">JPG, PNG, WEBP • up to 20 MB</div>
+
+              <!-- The actual input the server expects: name="photo" -->
+              <input id="photo"
+                     name="photo"
+                     type="file"
+                     accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp,image/*"
+                     hidden
+                     required>
+            </div>
+            <div id="err" class="nb-err">Invalid file. Please choose a JPG, PNG, or WEBP under 20 MB.</div>
+          </div>
+
+          <!-- Live preview -->
+          <div class="nb-col">
+            <div class="nb-preview" id="preview">
+              <img src="https://source.unsplash.com/800x600/?box,storage" alt="Preview">
+            </div>
+          </div>
+        </div>
+
+        <div class="nb-actions">
+          <a class="nb-btn" href="{{ url_for('boxes.index') }}">Cancel</a>
+          <button id="submitBtn" class="nb-btn primary" type="submit" disabled>Upload & Analyze</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const form   = document.getElementById('nbForm');
+  const input  = document.getElementById('photo');
+  const drop   = document.getElementById('drop');
+  const prev   = document.querySelector('#preview img');
+  const err    = document.getElementById('err');
+  const submit = document.getElementById('submitBtn');
+
+  // Allow exactly what your backend allows (plus image/* hint for cameras)
+  const OK_EXT  = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+  const OK_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
+  const MAX_MB  = 20; // phones can exceed 12MB; backend has no size limit
+
+  let pickerBusy = false; // prevents double-open races
+
+  const extOf = (name) => {
+    const i = name.lastIndexOf('.');
+    return i >= 0 ? name.slice(i).toLowerCase() : '';
+  };
+
+  const valid = (file) => {
+    if (!file) return false;
+    if (file.size > MAX_MB * 1024 * 1024) return false;
+    const ext  = extOf(file.name);
+    const mime = (file.type || '').toLowerCase();
+    if (OK_EXT.has(ext)) return true;        // prefer extension (aligns with server)
+    if (OK_MIME.has(mime)) return true;      // accept known mimes
+    return false;
+  };
+
+  const showErr  = (m) => { err.textContent = m || 'Invalid file.'; err.style.display = 'block'; submit.disabled = true; };
+  const clearErr = ()  => { err.style.display = 'none'; };
+
+  function handleFile(file){
+    if (!file) { pickerBusy = false; return; }
+
+    if (!valid(file)) {
+      const sizeMB = (file.size/1024/1024).toFixed(1);
+      showErr(`Please choose a JPG/PNG/WEBP under ${MAX_MB} MB. Selected: ${extOf(file.name) || 'unknown'} • ${sizeMB} MB`);
+      // Clear input so user can re-select the same file. Do NOT reopen dialog.
+      input.value = '';
+      pickerBusy = false;
+      return;
+    }
+
+    clearErr();
+    submit.disabled = false;
+
+    // Preview
+    const url = URL.createObjectURL(file);
+    prev.src = url;
+
+    pickerBusy = false;
+  }
+
+  function openPicker(){
+    if (pickerBusy) return;
+    pickerBusy = true;
+    input.click();
+    // release soon; real selection also releases in 'change'
+    setTimeout(()=>{ pickerBusy = false; }, 500);
+  }
+
+  // Open via click/keyboard (single path)
+  drop.addEventListener('click', openPicker);
+  drop.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); }
+  });
+
+  // Drag & drop UX
+  ['dragenter','dragover'].forEach(ev =>
+    drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); })
+  );
+  ['dragleave','drop'].forEach(ev =>
+    drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); })
+  );
+  drop.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    handleFile(file);
+  });
+
+  // Dialog selection
+  input.addEventListener('change', () => {
+    const file = input.files && input.files[0];
+    handleFile(file);
+  });
+
+  // Prevent accidental double submit; visual feedback
+  form.addEventListener('submit', () => {
+    submit.disabled = true;
+    submit.textContent = 'Analyzing…';
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+{% block title %}About · InventoryIQ{% endblock %}
+
+{% block content %}
+<style>
+  /* --- Scoped to About page --- */
+  .about-wrap{max-width:var(--container);margin:0 auto;padding:24px}
+  .about-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:22px}
+  .about-hero{display:flex;align-items:baseline;gap:12px;margin:0 0 12px}
+  .about-kicker{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--hairline);border-radius:999px;background:#fff;font-size:12px;color:var(--muted)}
+  .lead{font-size:18px;line-height:1.5;margin:8px 0 18px;color:#34383c}
+  .muted{color:var(--muted)}
+  .pillbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0}
+  .pill{padding:6px 10px;border:1px solid var(--hairline);border-radius:999px;background:#fff;font-weight:600;font-size:13px}
+
+  .about-card{grid-column:span 6;background:#fff;border:1px solid var(--hairline);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .about-card .pad{padding:16px}
+  @media (max-width:900px){.about-card{grid-column:span 12}}
+  .media16x9{aspect-ratio:16/9;background:#f3f4f6;overflow:hidden}
+  .media16x9 img{width:100%;height:100%;object-fit:cover;display:block}
+
+  .section-title{font-size:22px;margin:0 0 10px;letter-spacing:.3px}
+  .check{display:inline-flex;align-items:center;gap:8px}
+  .check svg{width:18px;height:18px;color:#12B76A}
+
+  .counter{font-weight:900;font-size:32px}
+  .counter-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .accordion{border:1px solid var(--hairline);border-radius:12px;overflow:hidden;background:#fff}
+  .acc-item + .acc-item{border-top:1px solid var(--hairline)}
+  .acc-btn{width:100%;text-align:left;padding:14px 16px;background:#fff;border:0;display:flex;justify-content:space-between;align-items:center;font-weight:700;cursor:pointer}
+  .acc-panel{display:none;padding:0 16px 14px 16px;color:#34383c}
+  .acc-btn svg{width:18px;height:18px;color:#7a7f84;transition:transform .18s ease}
+  .acc-item.open .acc-panel{display:block}
+  .acc-item.open .acc-btn svg{transform:rotate(180deg)}
+
+  .timeline{position:relative;padding-left:26px}
+  .timeline::before{content:"";position:absolute;left:12px;top:0;bottom:0;width:2px;background:#ececec}
+  .tl-step{position:relative;margin:12px 0 14px}
+  .tl-dot{position:absolute;left:-1px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .tl-title{margin:0;font-weight:800}
+  .tl-meta{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .kbd{border:1px solid var(--hairline);border-bottom-width:2px;border-radius:8px;padding:2px 6px;background:#fff;color:#555;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+  .quote{display:flex;gap:12px}
+  .quote img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid var(--hairline)}
+  .quote blockquote{margin:0}
+  .stars{letter-spacing:2px}
+
+  .cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end;margin-top:16px}
+  .btn{appearance:none;cursor:pointer;padding:10px 14px;border-radius:var(--radius-sm);background:#fff;color:var(--ink);border:1px solid var(--hairline);display:inline-flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.2px}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover{background:var(--accent-700)}
+  .btn-ghost{background:#fff}
+  .bd-back {
+  display: grid;
+  place-items: center;    /* centers the arrow inside */
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;    /* rounded button */
+  border: 1px solid var(--hairline);
+  background: #fff;
+  color: var(--ink);
+  flex-shrink: 0;         /* prevents squishing */
+  transition: 0.15s;
+}
+.bd-back:hover {
+  transform: translateX(-2px);
+  border-color: #dcdde0;
+  background: #fafafa;
+}
+
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--hairline);border-radius:999px;background:#fff;font-size:12px;color:#555}
+  .stat-card{display:flex;align-items:center;justify-content:space-between}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  /* tiny carousel */
+  .carousel{position:relative;overflow:hidden;border-radius:12px;border:1px solid var(--hairline)}
+  .car-track{display:flex;transition:transform .28s ease}
+  .car-item{min-width:100%;padding:16px}
+  .car-nav{position:absolute;inset:auto 8px 8px auto;display:flex;gap:6px}
+  .car-dot{width:8px;height:8px;border-radius:50%;background:#d8dadd;cursor:pointer;border:1px solid #caccd1}
+  .car-dot.active{background:#8c9096}
+</style>
+
+<div class="about-wrap">
+  <!-- Header -->
+  <div class="about-hero">
+    <a class="back-btn" href="{{ url_for('boxes.index') }}"
+       onclick="if (history.length>1 && document.referrer && new URL(document.referrer).origin===location.origin){history.back();return false;}"
+       aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <div>
+      <div class="about-kicker">
+        <span class="mono">INVENTORYIQ</span> • Built for move days & memory lapses
+      </div>
+      <h1 class="hero__title" style="margin:6px 0 0">The story behind InventoryIQ</h1>
+      <p class="lead">
+        We kept losing stuff in neatly labeled boxes. So we taught a camera to **remember**.<br>
+        InventoryIQ turns one photo into a searchable box catalog — names, images, and value at a glance.
+      </p>
+      <div class="pillbar">
+        <span class="pill">Private by default</span>
+        <span class="pill">Works offline (images stored local)</span>
+        <span class="pill">Cmd/Ctrl + K palette</span>
+        <span class="pill">Price hints</span>
+        <span class="pill">Lightning fast</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top row: Origin + How it works -->
+  <div class="about-grid" style="margin-top:10px">
+    <div class="about-card">
+      <div class="media16x9">
+        <img src="https://images.unsplash.com/photo-1519337265831-281ec6cc8514?q=80&w=1200&auto=format&fit=crop" alt="Garage shelves">
+      </div>
+      <div class="pad">
+        <h2 class="section-title">Why we built this</h2>
+        <p>
+          Moving apartments. Baby stuff. Camping gear. The things you swear you’ll “remember later.”
+          Six months pass, and now you’re opening every box like it’s a loot chest. We wanted a
+          <strong>zero-effort memory</strong> for real life: snap one photo → get a named box,
+          item images, and a rough value estimate.
+        </p>
+        <p class="muted">Fun fact: early prototypes were named <em>“Garage Goblin.”</em> The goblin was fired for mislabeling a kettle as “spaceship.”</p>
+      </div>
+    </div>
+
+    <div class="about-card">
+      <div class="pad">
+        <h2 class="section-title">How it works (60 seconds)</h2>
+        <ol style="margin:0 0 10px 18px">
+          <li>Upload a single photo of your box.</li>
+          <li>Vision model proposes a box title + items with confidence.</li>
+          <li>We fetch nicer images & ballpark prices.</li>
+          <li>You tweak names if you want (or don’t). Saved.</li>
+        </ol>
+        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Photos stay on your machine. We don’t sell data.</div>
+        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Delete is irreversible (by design).</div>
+        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Keyboard first: <span class="kbd">Cmd/Ctrl</span> + <span class="kbd">K</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats + Trust -->
+  <div class="about-grid">
+    <div class="about-card stat-card">
+      <div class="pad">
+        <div class="counter" data-count="120000">0</div>
+        <div class="counter-sub">Items indexed (and found later)</div>
+      </div>
+      <div class="pad">
+        <span class="chip">Avg. lookup: 1.3s</span>
+      </div>
+    </div>
+    <div class="about-card stat-card">
+      <div class="pad">
+        <div class="counter" data-count="9400">0</div>
+        <div class="counter-sub">Boxes organized across homes</div>
+      </div>
+      <div class="pad">
+        <span class="chip">99.8% uptime</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carousel: Tiny testimonials -->
+  <div class="about-card" style="margin:6px 0 18px">
+    <div class="carousel" id="car">
+      <div class="car-track">
+        <div class="car-item">
+          <div class="pad">
+            <div class="quote">
+              <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=256&auto=format&fit=crop" alt="">
+              <div>
+                <div class="stars">★★★★★</div>
+                <blockquote>“Labeled a box ‘Board Games & Regret.’ Found Catan in 3 seconds. 10/10 would organize again.”</blockquote>
+                <div class="muted">— Alex R., weekend strategist</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="car-item">
+          <div class="pad">
+            <div class="quote">
+              <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=256&auto=format&fit=crop" alt="">
+              <div>
+                <div class="stars">★★★★★</div>
+                <blockquote>“I finally know where the winter gloves are. In July. Still counts.”</blockquote>
+                <div class="muted">— Priya S., reluctant minimalist</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="car-item">
+          <div class="pad">
+            <div class="quote">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&auto=format&fit=crop" alt="">
+              <div>
+                <div class="stars">★★★★★</div>
+                <blockquote>“Estate cleanup was brutal until this. Took photos, shared the index. Sanity saved.”</blockquote>
+                <div class="muted">— Marcus T., project wrangler</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="car-nav"></div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="pad">
+        <h2 class="section-title">FAQ</h2>
+        <div class="accordion" id="faq">
+          <div class="acc-item">
+            <button class="acc-btn">Do you upload my photos somewhere?
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="acc-panel">No. Box photos are stored locally. If you connect a vision model, only that model sees the pixels; we never resell data.</div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-btn">How accurate are the item names?
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="acc-panel">Confidence is shown on every card. It’s okay to be imperfect — you can tweak names in one click. The point is to find things fast.</div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-btn">What if I move houses?
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="acc-panel">Rename boxes, add new photos, and keep your history. Your search works across everything.</div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-btn">Can I export my data?
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="acc-panel">Yes — CSV/JSON export is available from the command palette (<span class="kbd">Cmd/Ctrl</span>+<span class="kbd">K</span> → “Export”).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard + Tech -->
+    <div class="about-card">
+      <div class="pad">
+        <h2 class="section-title">Power moves</h2>
+        <ul style="margin:0 0 10px 18px">
+          <li><span class="kbd">Cmd/Ctrl</span> + <span class="kbd">K</span> → jump anywhere</li>
+          <li><span class="kbd">/</span> → quick search</li>
+          <li>Hover cards → press <span class="kbd">E</span> to edit, <span class="kbd">Del</span> to remove</li>
+        </ul>
+        <h3 class="section-title" style="font-size:18px;margin-top:14px">What’s under the hood</h3>
+        <div class="muted">Flask · SQLite · Jinja · vanilla JS · sensible CSS tokens · optional vision & pricing adapters</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security / Privacy -->
+  <div class="about-card">
+    <div class="pad">
+      <h2 class="section-title">Privacy that’s boring (the good kind)</h2>
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Photos & metadata live on your machine.</div>
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> No ads, trackers, or creepy pixels.</div>
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Delete means delete: files and DB rows are purged.</div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="about-card">
+    <div class="pad">
+      <h2 class="section-title">A tiny timeline</h2>
+      <div class="timeline">
+        <div class="tl-step">
+          <div class="tl-dot"></div>
+          <p class="tl-title">v0: weekend hack → found the camping stove</p>
+          <div class="tl-meta">A garage. One photo. “Stove?” worked. We were hooked.</div>
+        </div>
+        <div class="tl-step">
+          <div class="tl-dot"></div>
+          <p class="tl-title">v1: confidence + pricing hints</p>
+          <div class="tl-meta">Useful, not perfect. People started cataloging attics.</div>
+        </div>
+        <div class="tl-step">
+          <div class="tl-dot"></div>
+          <p class="tl-title">Today: fast, human-friendly search</p>
+          <div class="tl-meta">Images, names, value, and one place to find all of it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="about-card">
+    <div class="pad">
+      <h2 class="section-title">Ready to stop opening every box?</h2>
+      <p class="muted">Take one photo. InventoryIQ will remember for you.</p>
+      <div class="cta">
+        <a class="btn btn-ghost" href="{{ url_for('boxes.index') }}">Back to boxes</a>
+        <a class="btn btn-primary" href="{{ url_for('boxes.new_box') }}">Create a new box</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* --- Counters: satisfying count-up on view --- */
+(function(){
+  const els = document.querySelectorAll('.counter[data-count]');
+  if(!els.length) return;
+  const dur = 900;
+  const ease = t => 1 - Math.pow(1 - t, 3);
+
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      if(!en.isIntersecting) return;
+      const el = en.target;
+      obs.unobserve(el);
+      const target = parseInt(el.getAttribute('data-count'), 10);
+      const start = performance.now();
+      function tick(now){
+        const p = Math.min(1, (now - start)/dur);
+        const val = Math.floor(ease(p) * target);
+        el.textContent = val.toLocaleString();
+        if(p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }, {threshold:.4});
+  els.forEach(el=>obs.observe(el));
+})();
+
+/* --- FAQ accordion --- */
+(function(){
+  const root = document.getElementById('faq');
+  if(!root) return;
+  root.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.acc-btn');
+    if(!btn) return;
+    const item = btn.closest('.acc-item');
+    const opened = root.querySelector('.acc-item.open');
+    if(opened && opened !== item) opened.classList.remove('open');
+    item.classList.toggle('open');
+  });
+})();
+
+/* --- Tiny carousel --- */
+(function(){
+  const car = document.getElementById('car');
+  if(!car) return;
+  const track = car.querySelector('.car-track');
+  const items = car.querySelectorAll('.car-item');
+  const nav = car.querySelector('.car-nav');
+  let i = 0;
+  items.forEach((_,idx)=>{
+    const d = document.createElement('button');
+    d.className = 'car-dot' + (idx===0?' active':'');
+    d.addEventListener('click', ()=>go(idx));
+    nav.appendChild(d);
+  });
+  const dots = nav.querySelectorAll('.car-dot');
+  function go(idx){
+    i = (idx + items.length) % items.length;
+    track.style.transform = `translateX(-${i*100}%)`;
+    dots.forEach((d,di)=>d.classList.toggle('active', di===i));
+  }
+  let t = setInterval(()=>go(i+1), 4200);
+  car.addEventListener('mouseenter', ()=>clearInterval(t));
+  car.addEventListener('mouseleave', ()=>t = setInterval(()=>go(i+1), 4200));
+})();
+
+/* --- Back button robust fallback (works w/ direct opens) already on element inline --- */
+</script>
+{% endblock %}

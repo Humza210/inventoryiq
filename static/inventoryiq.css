@@ -1,0 +1,366 @@
+/* InventoryIQ — Tesla-inspired minimal UI with command palette */
+
+/* =========================
+   THEME TOKENS
+   ========================= */
+:root{
+  --bg:#F7F7F7;
+  --surface:#FFFFFF;
+  --ink:#171A1C;
+  --muted:#6B7075;
+  --hairline:#E6E6E7;
+
+  --accent:#E82127;
+  --accent-700:#C0151C;
+
+  --danger:#E82127;
+  --danger-700:#C0151C;
+
+  --radius:14px;
+  --radius-sm:10px;
+  --shadow:0 10px 22px rgba(0,0,0,.06);
+
+  --container:1320px;
+}
+
+/* =========================
+   BASE / RESETS
+   ========================= */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font:16px/1.55 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+a{color:var(--ink);text-decoration:none}
+a:hover{opacity:.9}
+img{max-width:100%;display:block}
+
+/* Container */
+.wrap{max-width:var(--container);margin:0 auto;padding:24px}
+
+/* =========================
+   NAVBAR (Tesla-like)
+   ========================= */
+.ts-nav{position:sticky;top:0;z-index:1000;background:#fff;border-bottom:1px solid var(--hairline)}
+.ts-nav__inner{
+  max-width:var(--container);margin:0 auto;
+  padding:14px 32px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px
+}
+.brand{display:inline-flex;align-items:center;gap:12px}
+.brand-logo{height:28px;width:auto}
+.ts-menu__center{display:flex;gap:28px;align-items:center}
+.ts-menu__right{display:flex;gap:18px;align-items:center}
+.ts-link{font-weight:600}
+.ts-link.muted{color:var(--muted)}
+.ts-link.is-active{border-bottom:2px solid #000;padding-bottom:2px}
+.ts-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--hairline)
+}
+.ts-icon:hover{border-color:#000}
+
+/* =========================
+   HEADINGS & META
+   ========================= */
+.hero{margin:18px 0 10px}
+.hero__title{font-size:44px;line-height:1.05;letter-spacing:.5px;margin:0 0 6px}
+.hero__sub{color:var(--muted);font-size:14px}
+.sub{color:var(--muted);font-size:13px}
+.toast{
+  margin:12px 0;background:var(--surface);
+  border:1px solid var(--hairline);border-radius:12px;
+  padding:10px 12px;box-shadow:var(--shadow)
+}
+
+/* =========================
+   BACK CHEVRON
+   ========================= */
+.page-header{display:flex;align-items:center;gap:16px;margin:0 0 18px}
+.back-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border-radius:50%;
+  background:#fff;border:1px solid var(--hairline);
+  color:#222;transition:all .2s ease
+}
+.back-btn svg{width:20px;height:20px}
+.back-btn:hover{background:#f7f7f7;color:var(--accent);border-color:var(--accent);transform:translateX(-2px)}
+.back-btn:active{transform:scale(.97)}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:2px 8px;border:1px solid var(--hairline);
+  border-radius:999px;background:#fff;font-size:12px;color:#555
+}
+
+/* =========================
+   TOOLBAR / QUICK SEARCH
+   ========================= */
+.toolbar{
+  display:flex;align-items:center;gap:14px;
+  margin:10px 0 20px;background:#fff;
+  border:1px solid var(--hairline);border-radius:14px;padding:10px 12px
+}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:6px 10px;border:1px solid var(--hairline);border-radius:999px;background:#fff;font-weight:600;font-size:13px}
+.pill--active{border-color:#000}
+.toolbar .spacer{flex:1}
+.search-lite{position:relative;width:320px;max-width:100%}
+.search-lite input{
+  width:100%;padding:10px 12px 10px 36px;
+  border:1px solid var(--hairline);border-radius:12px;
+  background:#fff;color:var(--ink)
+}
+.search-lite svg{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:#7a7f84
+}
+
+/* =========================
+   GRID & CARDS
+   ========================= */
+.grid{display:grid;gap:26px;grid-template-columns:repeat(12,1fr)}
+.grid--gallery{gap:28px}
+.card{
+  grid-column:span 6;background:#fff;
+  border:1px solid var(--hairline);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column
+}
+@media (max-width:1024px){.card{grid-column:span 6}}
+@media (max-width:700px){.card{grid-column:span 12}}
+.card--box{transition:transform .16s ease, box-shadow .16s ease}
+.card--box:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(0,0,0,.08)}
+.media{display:block;width:100%;aspect-ratio:16/10;background:#F1F1F2;overflow:hidden}
+.media--wider{aspect-ratio:16/9}
+.media img{width:100%;height:100%;object-fit:cover}
+.pad{padding:16px}
+.row{display:flex;align-items:center;gap:12px}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.title{font-weight:700;margin:0;letter-spacing:.5px}
+.card__meta{color:var(--muted);font-size:12px}
+
+/* =========================
+   BUTTONS
+   ========================= */
+.btn{
+  appearance:none;cursor:pointer;
+  padding:10px 14px;border-radius:var(--radius-sm);
+  background:#fff;color:var(--ink);border:1px solid var(--hairline);
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  font-weight:600;letter-spacing:.4px
+}
+.btn:hover{background:#FAFAFA}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-700)}
+.btn-danger{background:#fff;color:var(--danger);border-color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-ghost{background:#fff;color:var(--ink);border-color:var(--hairline)}
+
+/* =========================
+   PANELS / FORMS
+   ========================= */
+.panel{
+  background:#fff;border:1px solid var(--hairline);
+  border-radius:var(--radius);box-shadow:var(--shadow)
+}
+.panel .head{
+  padding:14px 16px;border-bottom:1px solid var(--hairline);
+  font-weight:700;letter-spacing:.5px
+}
+.panel .body{padding:16px}
+.field{margin-bottom:14px}
+.label{
+  display:block;font-size:12px;color:var(--muted);
+  margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px
+}
+input[type="text"], input[type="file"], input[type="number"], select, textarea{
+  width:100%;padding:12px;border:1px solid var(--hairline);
+  border-radius:12px;background:#fff;color:var(--ink)
+}
+textarea{min-height:120px;resize:vertical}
+
+/* Inline form helpers */
+.form-row{display:flex;gap:12px;flex-wrap:wrap}
+.form-row .col{flex:1 1 240px}
+
+/* =========================
+   ITEM CARDS (DETAIL PAGE)
+   ========================= */
+.items{display:grid;gap:22px;grid-template-columns:repeat(12,1fr)}
+.item-card{
+  grid-column:span 6;background:#fff;border:1px solid var(--hairline);
+  border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden
+}
+.item-media{aspect-ratio:16/10;background:#F1F1F2}
+.item-media img{width:100%;height:100%;object-fit:cover;display:block}
+.meta{color:var(--muted);font-size:13px;margin-top:6px}
+@media (max-width:700px){.item-card{grid-column:span 12}}
+
+/* =========================
+   SPLASH (FIRST LOAD ONLY)
+   ========================= */
+.splash{
+  position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+  transition:opacity .4s ease, visibility .4s ease
+}
+.splash.hide{opacity:0;visibility:hidden}
+.splash-card{
+  display:flex;align-items:center;gap:12px;
+  padding:18px 20px;border-radius:12px;background:#fff;
+  border:1px solid var(--hairline);box-shadow:var(--shadow)
+}
+.splash-logo{height:26px;width:auto}
+.splash-title{
+  font:700 16px/1 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing:4px;margin:0
+}
+.spinner{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid #eee;border-top-color:var(--accent);
+  animation:spin 1s linear infinite
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* =========================
+   COMMAND PALETTE (Cmd/Ctrl+K)
+   ========================= */
+.cmdk{
+  position:fixed;inset:0;z-index:1300;display:none;
+  align-items:center;justify-content:center;background:rgba(0,0,0,.25)
+}
+.cmdk.is-open{display:flex}
+.cmdk__panel{
+  width:min(720px,90vw);background:#fff;color:#111;border-radius:14px;
+  border:1px solid var(--hairline);box-shadow:0 24px 60px rgba(0,0,0,.18);overflow:hidden
+}
+.cmdk__header{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hairline)
+}
+.cmdk__header svg{width:20px;height:20px;color:#7a7f84}
+.cmdk__header input{
+  flex:1 1 auto;border:0;outline:0;background:transparent;
+  font-size:15px;padding:8px
+}
+.cmdk__header kbd{
+  border:1px solid var(--hairline);border-bottom-width:2px;border-radius:8px;
+  padding:2px 6px;background:#fff;color:#555;font-family:ui-monospace, SFMono-Regular, Menlo, monospace;font-size:12px
+}
+.cmdk__list{list-style:none;margin:0;padding:6px}
+.cmdk__list li{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 12px;border-radius:10px;cursor:pointer
+}
+.cmdk__list li:hover{background:#f6f6f7}
+.cmdk__list li strong{font-weight:700}
+.cmdk__list li span{color:#6b6f74;font-size:12px}
+
+/* =========================
+   UTILITIES / ACCESSIBILITY
+   ========================= */
+.visually-hidden{
+  position:absolute !important;height:1px;width:1px;overflow:hidden;
+  clip:rect(1px,1px,1px,1px);white-space:nowrap
+}
+
+/* =========================
+   RESPONSIVE TWEAKS
+   ========================= */
+@media (max-width:900px){
+  .ts-menu__center{gap:18px}
+  .hero__title{font-size:34px}
+  .ts-nav__inner{padding:12px 18px}
+  .wrap{padding:18px}
+}
+@media (max-width:600px){
+  .ts-menu__center{display:none} /* collapse center menu on very small screens */
+  .brand-logo{height:24px}
+  .toolbar{gap:10px}
+  .search-lite{width:100%}
+}
+
+/* ===== Header: align chip on title baseline ===== */
+.page-header {
+  display: flex;
+  align-items: baseline;        /* <— baseline alignment */
+  gap: 12px;
+  margin: 0 0 18px;
+}
+.page-header .hero__title {
+  margin: 0;                    /* remove stray margins */
+}
+.page-header .chip {
+  line-height: 1;               /* compact */
+  padding: 6px 10px;            /* a touch taller so it visually matches the title cap height */
+  transform: translateY(2px);   /* nudge to perfect baseline */
+}
+
+/* ===== Gallery: smaller, denser cards ===== */
+.grid--gallery {
+  /* auto-fill gives you responsive columns; min 260px card width */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 22px;
+}
+
+/* Card: tighter padding and refined hover */
+.card--box .media { aspect-ratio: 4 / 3; }   /* smaller preview */
+.card--box .pad { padding: 12px; }
+.card--box .title { 
+  font-size: 16px; 
+  letter-spacing: .2px;
+  margin: 0 0 6px;
+}
+.card--box .card__meta { font-size: 12px; }
+
+/* Subtle interactive polish */
+.card--box {
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  border-color: #ececed;
+}
+.card--box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(0,0,0,.08);
+  border-color: #e2e2e4;
+}
+
+/* Optional: soft image overlay on hover (depth cue) */
+.card--box .media { position: relative; overflow: hidden; }
+.card--box .media::after{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,.05));
+  opacity:0; transition: opacity .16s ease;
+}
+.card--box:hover .media::after{ opacity:1; }
+
+#navToggle { display: none; }
+
+/* Show the toggle and initially hide center menu on very small screens */
+@media (max-width: 600px) {
+  #navToggle { 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin-left: 6px;
+  }
+  .ts-menu__center { display: none; }     /* you already hide this at ≤600px */
+  /* When JS sets style="display:flex", ensure it looks right */
+  #primaryNav { gap: 18px; align-items: center; }
+}
+
+.ts-nav__inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 14px 32px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;  /* brand | center | right */
+  gap: 16px;
+}
+.brand { justify-self: start; }
+.ts-menu__center { justify-self: center; display:flex; gap:28px; align-items:center; }
+.ts-menu__right { justify-self: end; display:flex; gap:18px; align-items:center; }
