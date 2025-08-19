@@ -100,19 +100,19 @@
         {% set name = (box['name'] or '') %}
         {% set created = (box['created_at'] or '') %}
         {% set created_iso = created[:10] %}
+        {% set photo_url = box.get('photo_url') %}
         <a
           class="ix-card ix-col"
           href="{{ url_for('boxes.box_detail', box_id=box['id']) }}"
           data-name="{{ name|lower }}"
           data-date="{{ created_iso }}"
-          data-has-photo="{{ '1' if box['photo'] else '0' }}"
+          data-has-photo="{{ '1' if photo_url else '0' }}"
           data-created="{{ created_iso }}"
           aria-label="Open {{ name or 'box' }}"
         >
           <figure class="ix-media">
-            {% if box['photo'] %}
-              <!-- S3 URL stored in DB -->
-              <img src="{{ box['photo'] }}" alt="{{ name or 'Box photo' }}" loading="lazy" decoding="async" />
+            {% if photo_url %}
+              <img src="{{ photo_url }}" alt="{{ name or 'Box photo' }}" loading="lazy" decoding="async" />
             {% else %}
               <img src="{{ url_for('static', filename='placeholders/box.png') }}" alt="{{ name or 'Box' }}" loading="lazy" decoding="async" />
             {% endif %}

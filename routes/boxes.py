@@ -59,12 +59,11 @@ def _ensure_photo_url_on_box(box_row: MutableMapping[str, Any]) -> None:
 
 @bp.route("/")
 def index():
-    # list_boxes() is assumed to return an iterable of row mappings
-    boxes = [dict(b) for b in list_boxes()]
+    boxes = [dict(b) for b in list_boxes()]  # make them mutable
     for b in boxes:
-        _ensure_photo_url_on_box(b)
+        key = b.get("photo")
+        b["photo_url"] = presigned_url(key) if key else None
     return render_template("index.html", boxes=boxes)
-
 
 @bp.route("/new", methods=["GET", "POST"])
 def new_box():
