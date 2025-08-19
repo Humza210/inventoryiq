@@ -13,7 +13,7 @@ def create_app():
     load_dotenv()
     app = Flask(__name__)
     app.secret_key = os.getenv("FLASK_SECRET", "dev-secret")
-    app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
+    app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 102
 
     base_dir = Path(__file__).resolve().parent
     (base_dir / "uploads").mkdir(exist_ok=True)

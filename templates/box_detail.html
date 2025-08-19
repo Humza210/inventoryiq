@@ -3,78 +3,33 @@
 
 {% block content %}
 <style>
-  /* ========= Professional minimal styling (scoped) ========= */
   .bd-wrap{max-width:var(--container);margin:0 auto;padding:22px}
   .bd-row{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
   .bd-main{grid-column:span 8}
   .bd-side{grid-column:span 4}
   @media (max-width:980px){.bd-main,.bd-side{grid-column:span 12}}
 
-  /* Header */
-  .bd-head {
-  display: flex;
-  align-items: center;  /* keeps arrow + text perfectly aligned */
-  gap: 12px;
-  margin: 0 0 14px;
-}
-
-.bd-back {
-  display: grid;
-  place-items: center;    /* centers the arrow inside */
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;    /* rounded button */
-  border: 1px solid var(--hairline);
-  background: #fff;
-  color: var(--ink);
-  flex-shrink: 0;         /* prevents squishing */
-  transition: 0.15s;
-}
-.bd-back:hover {
-  transform: translateX(-2px);
-  border-color: #dcdde0;
-  background: #fafafa;
-}
-
-.bd-title {
-  margin: 0;
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: .2px;
-}
-
-.bd-meta {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-  /* Cards (photo, items, side) */
-  .bd-card{
-    background:#fff;border:1px solid var(--hairline);border-radius:16px;
-    box-shadow:var(--shadow);overflow:hidden;
+  .bd-head{ display:flex; align-items:center; gap:12px; margin:0 0 14px; }
+  .back-btn{
+    display:grid; place-items:center; width:42px; height:42px;
+    border-radius:12px; border:1px solid var(--hairline);
+    background:#fff; color:var(--ink); flex-shrink:0; transition:.15s;
   }
+  .back-btn:hover{ transform:translateX(-2px); border-color:#dcdde0; background:#fafafa; }
+
+  .bd-title{ margin:0; font-size:32px; font-weight:700; line-height:1.2; letter-spacing:.2px; }
+  .bd-meta{ margin:4px 0 0; color:var(--muted); font-size:13px; }
+
+  .bd-card{ background:#fff;border:1px solid var(--hairline);border-radius:16px; box-shadow:var(--shadow);overflow:hidden; }
   .bd-card .bd-headline{padding:12px 14px;border-bottom:1px solid var(--hairline);font-weight:700;letter-spacing:.3px}
 
-  /* Photo block */
   .bd-photo .media{margin:0;aspect-ratio:16/9;background:#f3f4f6}
   .bd-photo img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
-  .bd-photo .actions{
-    display:flex;align-items:center;gap:10px;justify-content:space-between;
-    padding:12px 14px;border-top:1px solid var(--hairline)
-  }
-  .bd-drop{
-    position:relative;display:flex;align-items:center;gap:10px;
-    padding:8px 10px;border:1px dashed var(--hairline);border-radius:10px;background:#fff
-  }
+  .bd-photo .actions{ display:flex;align-items:center;gap:10px;justify-content:space-between; padding:12px 14px;border-top:1px solid var(--hairline) }
+  .bd-drop{ position:relative;display:flex;align-items:center;gap:10px; padding:8px 10px;border:1px dashed var(--hairline);border-radius:10px;background:#fff }
   .bd-drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
 
-  /* Toolbar above items */
-  .bd-toolbar{
-    display:flex;align-items:center;gap:10px;margin:12px 0 14px;
-    background:#fff;border:1px solid var(--hairline);border-radius:12px;padding:10px 12px
-  }
+  .bd-toolbar{ display:flex;align-items:center;gap:10px;margin:12px 0 14px; background:#fff;border:1px solid var(--hairline);border-radius:12px;padding:10px 12px }
   .bd-select-on{display:none;gap:10px}
   .bd-select-on.show{display:flex}
   .bd-flex{flex:1}
@@ -83,7 +38,6 @@
   .bd-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#7a7f84}
   .bd-sort{min-width:170px;padding:8px 10px;border:1px solid var(--hairline);border-radius:10px;background:#fff}
 
-  /* Items */
   .bd-items{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
   .bd-item{grid-column:span 6}
   @media (max-width:700px){.bd-item{grid-column:span 12}}
@@ -98,12 +52,10 @@
 
   .chip{display:inline-block;padding:3px 8px;border:1px solid var(--hairline);border-radius:999px;font-size:12px;color:var(--muted)}
 
-  /* Inline edit states */
   .item-card.is-edit .read{display:none}
   .item-card.is-edit .edit{display:block}
   .edit{display:none}
 
-  /* Insights (sticky) */
   .bd-sticky{position:sticky;top:76px}
   .ins-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;padding:14px}
   .ins{grid-column:span 6;border:1px dashed var(--hairline);border-radius:10px;padding:10px 12px;background:#fff}
@@ -113,7 +65,6 @@
   .ins-tags{padding:0 14px 14px}
   .tag{display:inline-block;margin:6px 6px 0 0;padding:4px 8px;border:1px solid var(--hairline);border-radius:999px;background:#fff;font-size:12px}
 
-  /* Buttons (use your theme tokens) */
   .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--hairline);background:#fff;font-weight:600;cursor:pointer}
   .btn-ghost{background:#fff}
   .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -122,33 +73,27 @@
   .btn-danger:hover{background:var(--danger);color:#fff}
   .btn-sm{padding:8px 10px;border-radius:8px}
 
-  /* Lightbox */
   .lx{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:1200}
   .lx.is-open{display:flex}
   .lx img{max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 </style>
 
 <div class="bd-wrap">
-  <!-- Header -->
   <div class="bd-head">
-  <a class="back-btn" href="{{ request.referrer or url_for('boxes.index') }}" aria-label="Back">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M15 18l-6-6 6-6"/>
-    </svg>
-  </a>
-  <div>
-    <h1 class="bd-title">{{ box.name }}</h1>
-    <p class="bd-meta">Box #{{ box.id }} • Created {{ box.created_at }}</p>
+    <a class="back-btn" href="{{ request.referrer or url_for('boxes.index') }}" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <div>
+      <h1 class="bd-title">{{ box.name }}</h1>
+      <p class="bd-meta">Box #{{ box.id }} • Created {{ box.created_at }}</p>
+    </div>
   </div>
-</div>
 
   <div class="bd-row">
-    <!-- Main -->
     <section class="bd-main">
       <form id="boxForm" method="post" enctype="multipart/form-data" action="{{ url_for('boxes.box_detail', box_id=box.id) }}">
         <input type="hidden" id="boxNameInput" name="name" value="{{ box.name }}">
 
-        <!-- Photo -->
         <div class="bd-card bd-photo">
           <figure class="media">
             {% if photo_url %}
@@ -170,7 +115,6 @@
           </div>
         </div>
 
-        <!-- Items toolbar -->
         <div class="bd-toolbar">
           <button id="toggleSelect" class="btn btn-sm" type="button">Select</button>
           <div id="bulkActions" class="bd-select-on">
@@ -190,7 +134,6 @@
           </div>
         </div>
 
-        <!-- Items -->
         <div id="itemsGrid" class="bd-items" aria-live="polite">
           {% for it in items %}
           <div class="bd-item">
@@ -203,7 +146,6 @@
                 {% endif %}
               </figure>
               <div class="item-pad">
-                <!-- read -->
                 <div class="read">
                   <div class="row-between" style="margin-bottom:6px">
                     <h3 class="item-title">{{ it.name }}</h3>
@@ -222,7 +164,6 @@
                   </div>
                 </div>
 
-                <!-- edit -->
                 <div class="edit">
                   <div class="form-row">
                     <div class="col">
@@ -255,7 +196,6 @@
           {% endfor %}
         </div>
 
-        <!-- Footer actions -->
         <div class="row" style="justify-content:flex-end;gap:10px;margin-top:16px">
           <a class="btn btn-ghost" href="{{ url_for('boxes.index') }}">Close</a>
           <button class="btn btn-primary" type="submit" title="Save (⌘/Ctrl+S)">Save all</button>
@@ -263,7 +203,6 @@
       </form>
     </section>
 
-    <!-- Side / Insights -->
     <aside class="bd-side">
       <div class="bd-card bd-sticky">
         <div class="bd-headline">Insights</div>
@@ -294,7 +233,6 @@
   <form id="deleteBoxForm" method="post" action="{{ url_for('boxes.delete_box', box_id=box.id) }}"></form>
 </div>
 
-<!-- Lightbox -->
 <div id="lightbox" class="lx" role="dialog" aria-modal="true"><img alt=""></div>
 
 <script>
@@ -303,19 +241,12 @@
   const $$ = (q, ctx=document)=>Array.from(ctx.querySelectorAll(q));
 
   const form = $('#boxForm');
-  const nameEditable = $('#boxNameEditable');
-  const nameInput = $('#boxNameInput');
-
-  // Sync contenteditable with hidden input & quick-save
-  nameEditable?.addEventListener('input', ()=> nameInput.value = nameEditable.textContent.trim());
   window.addEventListener('keydown', (e)=>{
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); form?.submit(); }
     const tag=(document.activeElement||{}).tagName;
     if (e.key==='/' && tag!=='INPUT' && tag!=='TEXTAREA'){ e.preventDefault(); $('#itSearch')?.focus(); }
-    if (e.key==='Escape'){ closeLightbox(); $$('.item-card.is-edit').forEach(c=>c.classList.remove('is-edit')); }
   });
 
-  // Photo preview on drop/choose
   const photoInput = $('#photoInput');
   const photoImg   = document.querySelector('.bd-photo img');
   photoInput?.addEventListener('change', ()=>{
@@ -323,7 +254,6 @@
     photoImg.src = URL.createObjectURL(f);
   });
 
-  // Items: search + sort + select mode
   const grid   = $('#itemsGrid');
   const cards  = ()=> $$('.item-card', grid);
   const search = $('#itSearch');
@@ -332,6 +262,7 @@
   const bulk   = $('#bulkActions');
   const delSel = $('#bulkDelete');
 
+  // filter by text
   function filter(){
     const term = (search?.value || '').trim().toLowerCase();
     cards().forEach(c=>{
@@ -339,6 +270,8 @@
       c.style.display = (!term || n.includes(term) || d.includes(term)) ? '' : 'none';
     });
   }
+
+  // sort items
   function sortCards(){
     const mode = sort?.value || 'added_desc';
     const arr = cards();
@@ -355,35 +288,48 @@
     });
     arr.forEach(el=> grid.appendChild(el));
   }
+
   search?.addEventListener('input', filter);
   sort?.addEventListener('change', ()=>{ sortCards(); filter(); });
 
-  // Select mode
+  // select mode
   let selecting=false;
   function setSelecting(on){
-    selecting=on; bulk.classList.toggle('show', on);
+    selecting=on;
+    bulk.classList.toggle('show', on);
     selBtn.textContent = on ? 'Cancel' : 'Select';
-    cards().forEach(c=>{ const s=c.querySelector('.sel'); s.hidden=!on; s.checked=false; });
+    cards().forEach(c=>{
+      const s=c.querySelector('.sel');
+      s.hidden=!on;
+      s.checked=false;
+    });
     delSel.disabled=true;
   }
+
   selBtn?.addEventListener('click', ()=> setSelecting(!selecting));
+
   grid?.addEventListener('change', e=>{
     if (!e.target.classList.contains('sel')) return;
     delSel.disabled = !cards().some(c=>c.querySelector('.sel')?.checked);
   });
+
   delSel?.addEventListener('click', ()=>{
     const chosen = cards().filter(c=>c.querySelector('.sel')?.checked);
     if (!chosen.length) return;
     if (!confirm(`Delete ${chosen.length} selected item(s)?`)) return;
-    chosen.forEach(c=>{ c.querySelectorAll('input[name^="items["]').forEach(i=>i.remove()); c.remove(); });
+    // remove inputs so server doesn't try to save deleted rows
+    chosen.forEach(c=>{
+      c.querySelectorAll('input[name^="items["]').forEach(i=>i.remove());
+      c.remove();
+    });
     setSelecting(false);
   });
 
-  // Inline edit
+  // inline edit toggles
   grid?.addEventListener('click', (e)=>{
     const card = e.target.closest('.item-card'); if(!card) return;
-    if (e.target.matches('[data-edit]')) { card.classList.add('is-edit'); }
-    if (e.target.matches('[data-cancel]')){ card.classList.remove('is-edit'); }
+    if (e.target.matches('[data-edit]'))  card.classList.add('is-edit');
+    if (e.target.matches('[data-cancel]'))card.classList.remove('is-edit');
     if (e.target.matches('[data-delete]')){
       if (!confirm('Remove this item?')) return;
       card.querySelectorAll('input[name^="items["]').forEach(i=>i.remove());
@@ -391,17 +337,20 @@
     }
   });
 
-  // Lightbox
+  // lightbox
   const lb = $('#lightbox'), lbImg = lb?.querySelector('img');
   function openLightbox(src){ if(lb&&lbImg){ lbImg.src=src; lb.classList.add('is-open'); } }
   function closeLightbox(){ lb?.classList.remove('is-open'); }
+
   document.addEventListener('click', (e)=>{
-    const z=e.target.closest('[data-zoom]'); if(z) openLightbox(z.src);
+    const z=e.target.closest('[data-zoom]'); if(z){ e.preventDefault(); openLightbox(z.src); }
     if(e.target===lb) closeLightbox();
   });
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeLightbox(); });
 
-  // Init
-  sortCards(); filter();
+  // init
+  sortCards();
+  filter();
 })();
 </script>
 {% endblock %}

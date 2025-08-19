@@ -3,37 +3,23 @@
 
 {% block content %}
 <style>
-  :root{ --chip-nudge: 6px; } /* tweak 4–7px if your OS/weights differ */
+  :root{ --chip-nudge: 6px; }
 
-  /* ===== Header: precise baseline alignment ===== */
   .ix-head{
     display:flex; align-items:flex-end; justify-content:space-between;
     gap:16px; margin:2px 0 14px;
   }
-  .ix-head-left{
-  display:flex;
-  align-items: baseline;  /* align to the text baseline */
-  gap:12px;
-}
+  .ix-head-left{ display:flex; align-items: baseline; gap:12px; }
   .ix-title{ margin:0; font-size:44px; line-height:1.05; letter-spacing:.4px; }
   .ix-chip{
-  --chip-nudge-em: -0.14em;   /* tweak between -0.10em and -0.18em if needed */
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:.38em .75em;        /* keeps optical height nice */
-  line-height:1;
-  border:1px solid var(--hairline);
-  border-radius:999px;
-  background:#fff;
-  color:var(--muted);
-  font-weight:700;
-  font-size:13px;
-  position:relative;
-  top: var(--chip-nudge-em);  /* ↑ baseline alignment */
-}
+    --chip-nudge-em: -0.14em;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:.38em .75em; line-height:1;
+    border:1px solid var(--hairline); border-radius:999px;
+    background:#fff; color:var(--muted); font-weight:700; font-size:13px;
+    position:relative; top: var(--chip-nudge-em);
+  }
 
-  /* ===== Toolbar (unchanged aside from sizing sanity) ===== */
   .ix-bar{
     display:flex; align-items:center; flex-wrap:wrap; gap:12px;
     margin:8px 0 18px; background:#fff; border:1px solid var(--hairline);
@@ -51,7 +37,6 @@
   .ix-search input{width:100%; padding:10px 12px 10px 38px; border:1px solid var(--hairline); border-radius:12px; background:#fff}
   .ix-search svg{position:absolute; left:10px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:#7a7f84}
 
-  /* ===== Grid & Cards ===== */
   .ix-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:22px}
   .ix-col{grid-column:span 4}
   @media (max-width:1100px){ .ix-col{grid-column:span 6} }
@@ -66,7 +51,6 @@
   }
   .ix-card:hover{transform:translateY(-3px); box-shadow:0 14px 28px rgba(0,0,0,.08); border-color:#e2e2e4}
 
-  /* >>> FIX: remove default figure margins so images align flush */
   .ix-media{ margin:0; width:100%; aspect-ratio:4/3; background:#F1F1F2; overflow:hidden; }
   .ix-media img{ width:100%; height:100%; object-fit:cover; object-position:center 45%; display:block; }
 
@@ -127,7 +111,8 @@
         >
           <figure class="ix-media">
             {% if box['photo'] %}
-              <img src="{{ url_for('boxes.uploaded_file', filename=box['photo']) }}" alt="{{ name or 'Box photo' }}" loading="lazy" decoding="async" />
+              <!-- S3 URL stored in DB -->
+              <img src="{{ box['photo'] }}" alt="{{ name or 'Box photo' }}" loading="lazy" decoding="async" />
             {% else %}
               <img src="{{ url_for('static', filename='placeholders/box.png') }}" alt="{{ name or 'Box' }}" loading="lazy" decoding="async" />
             {% endif %}
@@ -213,7 +198,6 @@
       });
     });
 
-    // keyboard: "/" or Cmd/Ctrl+K → focus search
     window.addEventListener('keydown', (e)=>{
       const tag=(document.activeElement||{}).tagName;
       if (tag==='INPUT' || tag==='TEXTAREA') return;
